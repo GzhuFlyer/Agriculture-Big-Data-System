@@ -1,0 +1,20 @@
+#ifndef TCPRECEIVE_H
+#define TCPRECEIVE_H
+
+#define BUFFSIZE 2048
+#define listen_max 5
+
+int cond;
+int rscond;
+
+typedef struct TCP_rcv_arg
+{
+    char *local_addr;
+    int tcp_port;
+}TCP_rcv_arg_t;
+
+void stop_handler(int signum);
+
+void *tcppackrecv(void *arg);
+
+#endif

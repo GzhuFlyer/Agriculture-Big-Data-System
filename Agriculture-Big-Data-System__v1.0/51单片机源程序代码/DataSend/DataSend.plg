@@ -1,0 +1,17 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+F:\Design\Project\DataSend\DataSend.uvproj
+Project File Date:  02/25/2018
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling main.c...
+compiling dht11.c...
+compiling XPT2046.c...
+linking...
+Program Size: data=110.0 xdata=0 code=1757
+creating hex file from "DataSend"...
+"DataSend" - 0 Error(s), 0 Warning(s).

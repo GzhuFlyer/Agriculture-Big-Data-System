@@ -1,0 +1,146 @@
+#include "tcpreceive.h"
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/param.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <pthread.h>
+
+void stop_handler(int sinnum)
+{
+    cond = 0;
+    rscond = 0;
+}
+
+void *tcppackrecv(void *arg)
+{
+    int listen_fd,client_id,len = 1;
+    struct sockaddr_in server_addr;
+    struct sockaddr_in client_addr;
+    int sin_size;
+    fd_set master;
+    fd_set read_fds;
+    int fdmax,i,newfd,j;
+    char buf[BUFFSIZE + 1];
+
+    TCP_rcv_arg_t *rcv_arg = (TCP_rcv_arg_t *)arg;
+
+    sin_size = sizeof(client_addr);
+
+    if(-1 == (listen_fd = socket(AF_INET,SOCK_STREAM,0)))
+    {
+        fprintf(stderr,"Socket Error:%s\n",strerror(errno));
+        pthread_exit(NULL);
+    }
+
+    memset(&server_addr,0,sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    //server_addr.sin_addr.s_addr = inet_addr((*rcv_arg).local_addr);
+    server_addr.sin_port = htons((*rcv_arg).tcp_port);
+    setsockopt(listen_fd,SOL_SOCKET,SO_REUSEADDR,&len,sizeof(len));
+
+    if( -1 == bind(listen_fd,(struct sockaddr *)&server_addr,sizeof(server_addr)))
+    {
+        fprintf(stderr,"Bind Error:%s\n",strerror(errno));
+        pthread_exit(NULL);
+    }
+
+    if(-1 == listen(listen_fd,listen_max))
+    {
+        fprintf(stderr,"Listen Error:%s\n",strerror(errno));
+        pthread_exit(NULL);
+    }
+    //printf("listen ok!\n");
+
+    FD_ZERO(&master);
+    FD_ZERO(&read_fds);
+    FD_SET(listen_fd,&master);
+    fdmax = listen_fd;
+
+
+    cond = 1;
+
+    while(cond)
+    {
+        read_fds = master;
+		
+        if(-1 == select(fdmax+1,&read_fds,NULL,NULL,NULL))
+        {
+            fprintf(stderr,"Server Select Error:%s\n",strerror(errno));
+            pthread_exit(NULL);
+        }
+		
+        for(i = 0;i <= fdmax;i++)
+        {
+            if(FD_ISSET(i,&read_fds))
+            {
+                if(i == listen_fd)
+                {
+                    if(-1 == (newfd = accept(listen_fd,(struct sockaddr *)&client_addr,(socklen_t *)&sin_size)))
+                    {
+                        fprintf(stderr,"Accept Error:%s\n",strerror(errno));
+                    }
+                    else
+                    {
+                        FD_SET(newfd,&master);
+                        if(newfd > fdmax)
+                        {
+                            fdmax = newfd;
+                        }
+                        sprintf(buf,"Your SocketID is:%d.",newfd);
+                        if(send(newfd,buf,21,0) < 0)
+                        {
+                            printf("Send Error!\n");
+                        }
+                        printf("there is a new connection in,form %s,SocketID is %d.\n",inet_ntoa(client_addr.sin_addr),newfd);
+                    }
+                }
+                else
+                {
+                    sprintf(buf,"Form %2d:\n",i);
+                    if((len = recv(i,buf + 9,BUFFSIZE - 10,0)) <= 0)
+                    {
+                        if(0 == len)
+                        {
+                            printf("SocketID %d has left!\n",i);
+                        }
+                        else
+                        {
+                            perror("the recv() go end!\n");
+                        }
+                        close(i);
+                        FD_CLR(i,&master);
+                    }
+                    else
+                    {
+                        len += 9;
+                        buf[len] = '\0';
+                        printf("%s\n",buf);
+                        for(j = 0;j <= fdmax;j++)
+                        {
+                            if(FD_ISSET(j,&master) && j != listen_fd && j !=i)
+                            {
+                                if(-1 == send(j,buf,len,0))
+                                {
+                                    perror("Send() error!\n");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    pthread_exit(NULL);
+}

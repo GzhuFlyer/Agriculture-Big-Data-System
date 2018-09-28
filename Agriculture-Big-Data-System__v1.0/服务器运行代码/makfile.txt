@@ -1,0 +1,9 @@
+all:
+	gcc -c tcpsed.c
+	ar cr libtcpsed.a tcpsed.o
+	gcc -c tcpreceive.c 
+	ar cr libtcpreceive.a tcpreceive.o
+	gcc -o server server.c -L. -ltcpreceive -lpthread
+
+clean:
+	rm -rf *.o *.a server client

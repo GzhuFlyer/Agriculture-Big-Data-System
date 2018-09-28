@@ -1,0 +1,5 @@
+"main.obj",
+"dht11.obj",
+"XPT2046.obj" 
+TO "DataSend" 
+RAMSIZE(256) 

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/msg_list"
+            android:layout_width="match_parent"
+            android:layout_weight="0.87"
+            android:layout_height="wrap_content">
+        </TextView>
+
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1">
+            <TableRow>
+
+                <Button
+                    android:id="@+id/Led4On"
+                    android:layout_width="193dp"
+                    android:layout_height="wrap_content"
+                    android:text="浇水" />
+            <Button
+                android:id="@+id/Led4Off"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="停止浇水"/>
+            </TableRow>
+
+
+
+         <TableRow>
+            <Button
+                android:id="@+id/Led5On"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="施肥"/>
+            <Button
+                android:id="@+id/Led5Off"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="停止施肥"/>
+         </TableRow>
+        </TableLayout>
+
+
+</android.widget.LinearLayout>

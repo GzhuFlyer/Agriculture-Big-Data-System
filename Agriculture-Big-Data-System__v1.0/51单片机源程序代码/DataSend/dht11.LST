@@ -1,0 +1,203 @@
+C51 COMPILER V9.01   DHT11                                                                 05/17/2018 14:39:28 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE DHT11
+OBJECT MODULE PLACED IN dht11.OBJ
+COMPILER INVOKED BY: e:\Keil\C51\BIN\C51.EXE dht11.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #include <intrins.h> 
+   3          #include "DHT11.h"
+   4          
+   5          #define uchar unsigned char
+   6          #define uint unsigned int
+   7          #define   Data_0_time    4
+   8          
+   9          //----------------------------------------------//
+  10          //----------------IO口定义区--------------------//
+  11          //----------------------------------------------//
+  12          sbit  P2_0  = P1^0 ;
+  13          
+  14          //----------------------------------------------//
+  15          //----------------定义区--------------------//
+  16          //----------------------------------------------//
+  17          U8  U8FLAG,k;
+  18          U8  U8count,U8temp;
+  19          extern U8  U8T_data_H,U8T_data_L,U8RH_data_H,U8RH_data_L,U8checkdata;
+  20          U8  U8T_data_H_temp,U8T_data_L_temp,U8RH_data_H_temp,U8RH_data_L_temp,U8checkdata_temp;
+  21          U8  U8comdata;
+  22          U8  outdata[5];  //定义发送的字节数        
+  23          U8  indata[5];
+  24          U8  count, count_r=0;
+  25          extern U8  str[5];
+  26          extern U8 temp[20];
+  27          U16 U16temp1,U16temp2;
+  28          
+  29                 void Delay(U16 j)
+  30              {      U8 i;
+  31   1                  for(;j>0;j--)
+  32   1                {     
+  33   2                      for(i=0;i<27;i++);
+  34   2      
+  35   2                }
+  36   1          }
+  37                 void  Delay_10us(void)
+  38                {
+  39   1              U8 i;
+  40   1              i--;
+  41   1              i--;
+  42   1              i--;
+  43   1              i--;
+  44   1              i--;
+  45   1              i--;
+  46   1             }
+  47                  
+  48                  
+  49          void  COM(void)
+  50          {
+  51   1           
+  52   1              U8 i;
+  53   1                
+  54   1          for(i=0;i<8;i++)       
+  55   1                  {
+C51 COMPILER V9.01   DHT11                                                                 05/17/2018 14:39:28 PAGE 2   
+
+  56   2                      
+  57   2                          U8FLAG=2;   
+  58   2                              while((!P2_0)&&U8FLAG++);
+  59   2                              Delay_10us();
+  60   2                              Delay_10us();
+  61   2                              Delay_10us();
+  62   2                              U8temp=0;
+  63   2                              if(P2_0)U8temp=1;
+  64   2                              U8FLAG=2;
+  65   2                              while((P2_0)&&U8FLAG++);
+  66   2                              //超时则跳出for循环               
+  67   2                              if(U8FLAG==1)break;
+  68   2                              //判断数据位是0还是1                       
+  69   2                              // 如果高电平高过预定0高电平值则数据位为 1               
+  70   2                              U8comdata<<=1;
+  71   2                              U8comdata|=U8temp;        //0
+  72   2                   }//rof
+  73   1                 
+  74   1              }
+  75          
+  76                  //--------------------------------
+  77                  //-----湿度读取子程序 ------------
+  78                  //--------------------------------
+  79                  //----以下变量均为全局变量--------
+  80                  //----温度高8位== U8T_data_H------
+  81                  //----温度低8位== U8T_data_L------
+  82                  //----湿度高8位== U8RH_data_H-----
+  83                  //----湿度低8位== U8RH_data_L-----
+  84                  //----校验 8位 == U8checkdata-----
+  85                  //----调用相关子程序如下----------
+  86                  //---- Delay();, Delay_10us();,COM(); 
+  87                  //--------------------------------
+  88          
+  89                  void RH(void)
+  90                  {
+  91   1                //主机拉低18ms 
+  92   1             P2_0=0;
+  93   1                 Delay(180);
+  94   1                 P2_0=1;
+  95   1               //总线由上拉电阻拉高 主机延时20us
+  96   1                 Delay_10us();
+  97   1                 Delay_10us();
+  98   1                 Delay_10us();
+  99   1                 Delay_10us();
+ 100   1               //主机设为输入 判断从机响应信号 
+ 101   1                 P2_0=1;
+ 102   1               //判断从机是否有低电平响应信号 如不响应则跳出，响应则向下运行    
+ 103   1                 if(!P2_0)             //T !    
+ 104   1                 {
+ 105   2                              U8FLAG=2;
+ 106   2                              //判断从机是否发出 80us 的低电平响应信号是否结束         
+ 107   2                              while((!P2_0)&&U8FLAG++);
+ 108   2                              U8FLAG=2;
+ 109   2                              //判断从机是否发出 80us 的高电平，如发出则进入数据接收状态
+ 110   2                              while((P2_0)&&U8FLAG++);
+ 111   2                              //数据接收状态           
+ 112   2                              COM();
+ 113   2                              U8RH_data_H_temp=U8comdata;
+ 114   2                              COM();
+ 115   2                              U8RH_data_L_temp=U8comdata;
+ 116   2                              COM();
+ 117   2                              U8T_data_H_temp=U8comdata;
+C51 COMPILER V9.01   DHT11                                                                 05/17/2018 14:39:28 PAGE 3   
+
+ 118   2                              COM();
+ 119   2                              U8T_data_L_temp=U8comdata;
+ 120   2                              COM();
+ 121   2                              U8checkdata_temp=U8comdata;
+ 122   2                              P2_0=1;
+ 123   2                              //数据校验 
+ 124   2               
+ 125   2                 U8temp=(U8T_data_H_temp+U8T_data_L_temp+U8RH_data_H_temp+U8RH_data_L_temp);
+ 126   2                 if(U8temp==U8checkdata_temp)
+ 127   2                 {
+ 128   3                        U8RH_data_H=U8RH_data_H_temp;
+ 129   3                        U8RH_data_L=U8RH_data_L_temp;
+ 130   3                        U8T_data_H=U8T_data_H_temp;
+ 131   3                        U8T_data_L=U8T_data_L_temp;
+ 132   3                        U8checkdata=U8checkdata_temp;
+ 133   3                 }//fi
+ 134   2                 }//fi
+ 135   1      
+ 136   1              }
+ 137          
+ 138          void showHumTemp(void)
+ 139          {
+ 140   1              
+ 141   1              RH();   
+ 142   1              str[0]=U8RH_data_H;                                                                                           
+ 143   1                  str[1]=U8RH_data_L;
+ 144   1                  str[2]=U8T_data_H;
+ 145   1                  str[3]=U8T_data_L;
+ 146   1                 
+ 147   1      
+ 148   1                      temp[0]='H';
+ 149   1                      temp[1]='U';
+ 150   1                      temp[2]='M';
+ 151   1                      temp[3]=':';
+ 152   1                      temp[4]=(((str[0]/16)*16)+str[0]%16)/10+'0';
+ 153   1                      temp[5]=(((str[0]/16)*16)+str[0]%16)%10+'0';
+ 154   1                      temp[6]='.';
+ 155   1                      temp[7]=(((str[1]/16)*16)+str[1]%16)/10+'0';
+ 156   1                      temp[8]=(((str[1]/16)*16)+str[1]%16)%10+'0';
+ 157   1      
+ 158   1                      temp[9]=' ';
+ 159   1      
+ 160   1                      temp[10]='T';
+ 161   1                      temp[11]='E';
+ 162   1                      temp[12]='M';
+ 163   1                      temp[13]='P';
+ 164   1      
+ 165   1                      temp[14]=(((str[2]/16)*16)+str[2]%16)/10+'0';
+ 166   1                      temp[15]=(((str[2]/16)*16)+str[2]%16)%10+'0';
+ 167   1                      temp[16]='.';
+ 168   1                      temp[17]=(((str[3]/16)*16)+str[3]%16)/10+'0';
+ 169   1                      temp[18]=(((str[3]/16)*16)+str[3]%16)%10+'0';
+ 170   1                      temp[19]='\0';
+ 171   1      
+ 172   1      
+ 173   1      }
+ 174          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    474    ----
+   CONSTANT SIZE    =   ----    ----
+C51 COMPILER V9.01   DHT11                                                                 05/17/2018 14:39:28 PAGE 4   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     26       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

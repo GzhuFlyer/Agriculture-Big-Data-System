@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <errno.h>
+
+#include "tcpreceive.h"
+
+#define PORT 1234
+#define IP "0.0.0.0"
+
+int main()
+{
+    pthread_t tid;
+    pthread_t id;
+    void *tret;
+    TCP_rcv_arg_t rcv_arg;
+
+    rcv_arg.tcp_port = PORT;
+    rcv_arg.local_addr = IP;
+    printf("the main process!\n");
+
+    int i= pthread_create(&tid,NULL,(void *)tcppackrecv,(void *)&rcv_arg);
+    if( i != 0)
+    {
+        printf("Create pthread error!\n");
+        pthread_exit(NULL);
+    }
+    
+    if (0 != pthread_join(tid, &tret))
+    {
+        printf("Join pthread error!\n");
+    }
+
+    return 0;
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:stretchColumns="1"
+    tools:context="com.example.gzhuflyer.controlterminal.LoginMainActivity">
+
+
+    <TableRow>
+        <TextView
+            android:layout_height="wrap_content"
+            android:text="账号："/>
+        <EditText
+            android:id="@+id/account"
+            android:layout_height="wrap_content"
+            android:hint="请输入账号"
+            android:text="admin"/>
+    </TableRow>
+
+    <TableRow>
+        <TextView
+            android:layout_height="wrap_content"
+            android:text="密码："/>
+        <EditText
+            android:id="@+id/password"
+            android:layout_height="wrap_content"
+            android:hint="请输入密码"
+            android:inputType="textPassword"
+            android:text="123456"/>
+    </TableRow>
+
+    <TableRow>
+        <Button
+            android:id="@+id/login"
+            android:layout_height="wrap_content"
+            android:layout_span="2"
+            android:text="登陆"/>
+    </TableRow>
+
+</android.widget.TableLayout>
